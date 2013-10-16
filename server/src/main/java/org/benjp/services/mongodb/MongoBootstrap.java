@@ -193,17 +193,22 @@ public class MongoBootstrap
     rooms.createIndex(new BasicDBObject("users", 1), notUnique.append("name", "users_1").append("ns", dbName+".room_rooms"));
     log.info("### rooms indexes in "+getDB().getName());
 
-    DBCollection coll = getDB().getCollection(ChatServiceImpl.M_ROOM_PREFIX+ ChatServiceImpl.M_ROOMS_COLLECTION);
-    DBCursor cursor = coll.find();
-    while (cursor.hasNext())
-    {
-      DBObject dbo = cursor.next();
-      String roomId = dbo.get("_id").toString();
-      DBCollection collr = getDB().getCollection(ChatServiceImpl.M_ROOM_PREFIX+roomId);
-      collr.ensureIndex(new BasicDBObject("timestamp", 1), notUnique.append("name", "timestamp_1").append("ns", dbName+".room_"+roomId));
-      collr.ensureIndex(new BasicDBObject("timestamp", -1), notUnique.append("name", "timestamp_m1").append("ns", dbName+".room_"+roomId));
-      log.info("##### room index in "+roomId);
-    }
+    DBCollection collr = getDB().getCollection(ChatServiceImpl.M_ROOMS_DATA_COLLECTION);
+    index = new BasicDBObject();
+    index.put("timestamp", 1);
+    index.put("room", 1);
+    collr.ensureIndex(index, notUnique.append("name", "timestamp_1_room_1").append("ns", dbName+".rooms_data"));
+    index = new BasicDBObject();
+    index.put("timestamp", 1);
+    collr.ensureIndex(index, notUnique.append("name", "timestamp_1").append("ns", dbName+".rooms_data"));
+    index = new BasicDBObject();
+    index.put("timestamp", -1);
+    index.put("room", 1);
+    collr.ensureIndex(index, notUnique.append("name", "timestamp_m1_room_1").append("ns", dbName+".rooms_data"));
+    index = new BasicDBObject();
+    index.put("timestamp", -1);
+    collr.ensureIndex(index, notUnique.append("name", "timestamp_m1").append("ns", dbName+".rooms_data"));
+    log.info("### rooms_data index in "+getDB().getName());
 
 
     DBCollection tokens = getDB().getCollection("tokens");

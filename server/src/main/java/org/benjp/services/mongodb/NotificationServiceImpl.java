@@ -99,9 +99,9 @@ public class NotificationServiceImpl implements org.benjp.services.NotificationS
 
     query.put("user", user);
 //    query.put("isRead", false);
-    if (type!=null) query.put("type", type);
-    if (category!=null) query.put("category", category);
     if (categoryId!=null) query.put("categoryId", categoryId);
+    if (category!=null) query.put("category", category);
+    if (type!=null) query.put("type", type);
     DBCursor cursor = coll.find(query);
     total = cursor.size();
 

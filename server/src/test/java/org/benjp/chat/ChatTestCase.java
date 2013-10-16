@@ -25,18 +25,8 @@ public class ChatTestCase extends AbstractChatTestCase
   @Before
   public void setUp()
   {
-    List<String> users = new ArrayList<String>();
-    users.add("benjamin");
-    users.add("john");
-    String roomId = ServiceBootstrap.getChatService().getRoom(users);
-    ConnectionManager.getInstance().getDB().getCollection(ChatService.M_ROOM_PREFIX+roomId).drop();
-    users = new ArrayList<String>();
-    users.add("benjamin");
-    users.add("mary");
-    roomId = ServiceBootstrap.getChatService().getRoom(users);
-    ConnectionManager.getInstance().getDB().getCollection(ChatService.M_ROOM_PREFIX+roomId).drop();
+    ConnectionManager.getInstance().getDB().getCollection(ChatService.M_ROOMS_DATA_COLLECTION).drop();
     ConnectionManager.getInstance().getDB().getCollection(ChatService.M_ROOM_PREFIX+ChatService.M_ROOMS_COLLECTION).drop();
-
     ConnectionManager.getInstance().getDB().getCollection(UserService.M_USERS_COLLECTION).drop();
 
     UserService userService = ServiceBootstrap.getUserService();

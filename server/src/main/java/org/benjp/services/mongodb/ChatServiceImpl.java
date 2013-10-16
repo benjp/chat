@@ -71,7 +71,7 @@ public class ChatServiceImpl implements org.benjp.services.ChatService
 
   public void write(String message, String user, String room, String isSystem, String options)
   {
-    DBCollection coll = db().getCollection(M_ROOM_PREFIX+room);
+    DBCollection coll = db().getCollection(M_ROOMS_DATA_COLLECTION);
 
     message = StringUtils.chomp(message);
     message = message.replaceAll("&", "&#38");
@@ -83,6 +83,7 @@ public class ChatServiceImpl implements org.benjp.services.ChatService
     message = message.replaceAll("\t", "  ");
 
     BasicDBObject doc = new BasicDBObject();
+    doc.put("room", room);
     doc.put("user", user);
     doc.put("message", message);
     doc.put("time", new Date());
@@ -105,10 +106,11 @@ public class ChatServiceImpl implements org.benjp.services.ChatService
 
   public void delete(String room, String user, String messageId)
   {
-    DBCollection coll = db().getCollection(M_ROOM_PREFIX+room);
+    DBCollection coll = db().getCollection(M_ROOMS_DATA_COLLECTION);
     BasicDBObject query = new BasicDBObject();
     query.put("_id", new ObjectId(messageId));
     query.put("user", user);
+    query.put("room", room);
     DBCursor cursor = coll.find(query);
     if (cursor.hasNext())
     {
@@ -121,7 +123,7 @@ public class ChatServiceImpl implements org.benjp.services.ChatService
 
   public void edit(String room, String user, String messageId, String message)
   {
-    DBCollection coll = db().getCollection(M_ROOM_PREFIX+room);
+    DBCollection coll = db().getCollection(M_ROOMS_DATA_COLLECTION);
 
     message = StringUtils.chomp(message);
     message = message.replaceAll("&", "&#38");
@@ -134,6 +136,7 @@ public class ChatServiceImpl implements org.benjp.services.ChatService
     BasicDBObject query = new BasicDBObject();
     query.put("_id", new ObjectId(messageId));
     query.put("user", user);
+    query.put("room", room);
     DBCursor cursor = coll.find(query);
     if (cursor.hasNext())
     {
@@ -167,7 +170,7 @@ public class ChatServiceImpl implements org.benjp.services.ChatService
     calendar.set(Calendar.SECOND, 0);
     Date today = calendar.getTime();
 
-    DBCollection coll = db().getCollection(M_ROOM_PREFIX+room);
+    DBCollection coll = db().getCollection(M_ROOMS_DATA_COLLECTION);
 
     BasicDBObject query = new BasicDBObject();
     long from = (fromTimestamp!=null) ? fromTimestamp : System.currentTimeMillis() - readMillis;
@@ -177,6 +180,7 @@ public class ChatServiceImpl implements org.benjp.services.ChatService
       tsobj.append("$lt", toTimestamp);
     }
     query.put("timestamp", tsobj);
+    query.put("room", room);
 
     BasicDBObject sort = new BasicDBObject();
     sort.put("timestamp", -1);
@@ -315,6 +319,7 @@ public class ChatServiceImpl implements org.benjp.services.ChatService
 
   }
 
+/*
   private void ensureIndexInRoom(String room)
   {
     DBCollection coll = db().getCollection(M_ROOM_PREFIX+room);
@@ -324,6 +329,7 @@ public class ChatServiceImpl implements org.benjp.services.ChatService
     coll.ensureIndex("timestamp");
     coll.remove(doc);
   }
+*/
 
   public String getSpaceRoom(String space)
   {
@@ -340,7 +346,7 @@ public class ChatServiceImpl implements org.benjp.services.ChatService
         basicDBObject.put("space", space);
         basicDBObject.put("type", TYPE_ROOM_SPACE);
         coll.insert(basicDBObject);
-        ensureIndexInRoom(room);
+//        ensureIndexInRoom(room);
       } catch (MongoException me) {
         log.warning(me.getCode()+" : "+room+" : "+me.getMessage());
       }
@@ -364,7 +370,7 @@ public class ChatServiceImpl implements org.benjp.services.ChatService
         basicDBObject.put("user", user);
         basicDBObject.put("type", TYPE_ROOM_TEAM);
         coll.insert(basicDBObject);
-        ensureIndexInRoom(room);
+//        ensureIndexInRoom(room);
       } catch (MongoException me) {
         log.warning(me.getCode()+" : "+room+" : "+me.getMessage());
       }
@@ -429,7 +435,7 @@ public class ChatServiceImpl implements org.benjp.services.ChatService
         basicDBObject.put("users", users);
         basicDBObject.put("type", TYPE_ROOM_USER);
         coll.insert(basicDBObject);
-        ensureIndexInRoom(room);
+//        ensureIndexInRoom(room);
       } catch (MongoException me) {
         log.warning(me.getCode()+" : "+room+" : "+me.getMessage());
       }
@@ -646,20 +652,10 @@ public class ChatServiceImpl implements org.benjp.services.ChatService
   public int getNumberOfMessages()
   {
     int nb = 0;
-    DBCollection coll = db().getCollection(M_ROOM_PREFIX+M_ROOMS_COLLECTION);
+    DBCollection coll = db().getCollection(M_ROOMS_DATA_COLLECTION);
     BasicDBObject query = new BasicDBObject();
     DBCursor cursor = coll.find(query);
-    while (cursor.hasNext())
-    {
-      DBObject dbo = cursor.next();
-      String roomId = dbo.get("_id").toString();
-      DBCollection collr = db().getCollection(M_ROOM_PREFIX+roomId);
-      BasicDBObject queryr = new BasicDBObject();
-      DBCursor cursorr = collr.find(queryr);
-//      log.info(roomId+" = "+cursorr.count());
-      nb += cursorr.count();
-    }
-
+    nb = cursor.count();
     return nb;
   }
 
