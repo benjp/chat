@@ -2275,6 +2275,10 @@ ChatApplication.prototype.setStatusInvisible = function() {
   chatApplication.setStatus("invisible");
 };
 
+ChatApplication.prototype.connectWeemo = function() {
+  weemoExtension.forceAuthenticate();
+};
+
 ChatApplication.prototype.createWeemoCall = function() {
   console.log("targetUser : "+chatApplication.targetUser);
   console.log("targetFullname   : "+chatApplication.targetFullname);
@@ -2326,6 +2330,8 @@ ChatApplication.prototype.sendMessage = function(msg, callback) {
       options.username = this.username;
       options.fullname = this.fullname;
       sendMessageToServer = true;
+    } else if (msg.indexOf("/connect")===0) {
+      this.connectWeemo();
     } else if (msg.indexOf("/call")===0) {
       this.createWeemoCall();
     } else if (msg.indexOf("/join")===0) {

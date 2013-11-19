@@ -321,6 +321,11 @@ WeemoExtension.prototype.hangup = function() {
   }
 };
 
+WeemoExtension.prototype.forceAuthenticate = function() {
+  jqchat(".btn-weemo").addClass('disabled');
+  this.weemo.authenticate(1);
+};
+
 /**
  * Init Weemo Call
  * @param $uid
@@ -334,6 +339,7 @@ WeemoExtension.prototype.initCall = function($uid, $name) {
     this.weemo.setWebAppId(this.weemoKey); // Configure your Web App Identifier (For POC use your Web Application Identifier provided by Weeemo)
     this.weemo.setToken("weemo"+$uid); // Set user unique identifier
     this.weemo.initialize(); // Launches the connection between WeemoDriver and Javascript
+    weemoExtension.isConnected = false;
 
     /**
      * Weemo Driver On Connection Javascript Handler
@@ -357,13 +363,32 @@ WeemoExtension.prototype.initCall = function($uid, $name) {
 
           this.authenticate();
           break;
+        case 'sipNok':
+        case 'loggedasotheruser':
+        case 'kicked':
+          jqchat(".btn-weemo").addClass('disabled');
+          var dn = weemoExtension.displaynameToCall;
+          if (dn === this.getDisplayName()) {
+            weemoExtension.isConnected = false;
+          }
+          break;
+        case 'disconnectedWeemoDriver':
+          weemoExtension.isConnected = false;
+          break;
+/*
         case 'loggedasotheruser':
           // force weemo to kick previous user and replace it with current one
           this.authenticate(1);
           break;
+*/
         case 'sipOk':
           weemoExtension.isConnected = true;
-          jqchat(".btn-weemo").removeClass('disabled');
+          var dn = weemoExtension.displaynameToCall;
+          if (dn === this.getDisplayName()) {
+            jqchat(".btn-weemo").removeClass('disabled');
+          } else {
+            jqchat(".btn-weemo").addClass('disabled');
+          }
           break;
       }
     }
