@@ -1010,7 +1010,6 @@ function ChatApplication() {
   this.showSpacesHistory = false;
   this.showTeamsHistory = false;
 
-
 }
 
 
@@ -1855,7 +1854,7 @@ ChatApplication.prototype.onShowMessagesCallback = function(out) {
   var $chats = jqchat("#chats");
   $chats.html('<span>'+out+'</span>');
   sh_highlightDocument();
-  $chats.animate({ scrollTop: 20000 }, 'fast');
+  $chats.scrollTop(20000);
 
   jqchat(".msg-text").mouseover(function() {
     if (jqchat(".msg-actions", this).children().length > 0) {
@@ -1876,6 +1875,24 @@ ChatApplication.prototype.onShowMessagesCallback = function(out) {
     msgHtml = msgHtml.replace(/<br>/g, '\n');
     var msgFullname = $uimsg.attr("data-fn");
     jqchat("#msg").focus().val('').val("[quote="+msgFullname+"]"+msgHtml+" [/quote] ");
+
+  });
+
+  jqchat(".msg-action-translate").on("click", function() {
+    var $uimsg = jqchat(this).parent().parent().children().first();
+    var $translateAction = jqchat(this);
+    var msgHtml = $uimsg.html();
+
+    chatNotification.translate(msgHtml, function(output) {
+      if (output !== undefined) {
+        var out = "<span class='transout'>"+ output + "</span><br/><span class='transin'>" + msgHtml + "</span>";
+        $uimsg.html(out);
+        console.log("success:"+output);
+        $translateAction.remove();
+        var $chats = jqchat("#chats");
+        $chats.scrollTop($chats.scrollTop()+20);
+      }
+    });
 
   });
 
